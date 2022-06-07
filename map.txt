@@ -1,0 +1,119 @@
+<body>
+    <section "todoapp"> 
+
+      state = {
+            todoLost,
+            filterList
+        }
+
+        todoList: {
+            Description: 'text'
+            dateCreate: new Date()
+            id: num
+            done: false
+            show: true
+            editing: false
+        }
+
+        {
+            fn (addItem) добавляем новую задачу в state: todoList (принимаем text )
+            fn (clearTaskList) удаляем список выполненых задачи
+            fn (toggleProperty) меняем значение Свойства из state (передаемобъект из state, индекс задачи, меняемое свойство)
+            fn (createTodoItem) создаем карточку задачи (принимаем text)
+            fn (deleteItem) удалем задачу из state: todoList (принимаем id задачи)
+            fn (toggleFilter) меняем отображение задач по условиям фильтра (принимаем имяфильтра)
+            fn (onEdit) меняем свойство state: editing (принимаем id задачи)
+            fn (onToggleDone) меняем свойство state: done (принимаем id)
+        }
+
+        <header "header">  
+            {   Принимает : addItem}
+            <h1>
+            <form "new-todo-form">
+                <input "new-todo" placeholder="Task"> ------ вводим тукст новой задачи
+                <input /* timer - min'> ------ вводим минуты
+                <input /* timer - sec>  ------ вводим секунды
+
+        <section "main>
+
+            <ul "TaskList">
+                Принимает : {  
+                    todoList 
+                    deleteItem
+                    onToggleDone
+                    onEdit
+                    toggleEditFalse >>> ????                    
+                }
+
+
+                todoLost.map({...props} = item, formatDate ) => <Task />
+
+                <li className = 'completed' >
+                    state ={
+                        label
+                    }
+
+                приномает:    { 
+                    {...todos} --> description, done, show, editing, dateCreate
+                    onDeleted
+                    timeAfterCreate
+                    id
+                    onToggleDone
+                    onEdit
+                    toggleEditFalse   
+                    }   
+
+                    if (done) className += create
+                    if (!show) className += hidden 
+
+                    input = editing? <input> : <div>
+
+                    <div >
+                        <input>
+                        <label>
+                            <sapn>
+                            <span>
+                                <button edit  --> change editing:true, change>
+                                <button destroy>
+                            <sapn>
+                        <button>
+                        <button>
+                    {input}
+
+                <li className = 'editing'>
+                    <div>
+                        <input>
+                        <label>
+                            <sapn>
+                            <span>
+                                <button>
+                                <button>
+                            <sapn>
+                        <button>
+                        <button>
+                    <input>
+
+                <li>
+                    <div>
+                        <input>
+                        <label>
+                            <sapn>
+                            <span>
+                                <button>
+                                <button>
+                            <sapn>
+                        <button>
+                        <button>
+
+            <footer>
+                <span>
+                <ul>
+                    <li>
+                        <button>
+                    <li>
+                        <button>
+                    <li>
+                        <button>      
+                <button>
+                                 
+

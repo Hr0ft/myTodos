@@ -6,66 +6,77 @@ class Task extends Component {
     super(props);
 
     this.state = {
-      taskLabel: this.props.description,
+      editLabel: '',
     };
 
-    this.togle = () => {
+    this.togleDone = () => {
       this.props.onToggleDone(this.props.id);
     };
-    this.onEditng = (evt) => {
-      evt.preventDefault();
-      this.props.onEdit(this.props.id);
+
+    this.toggleEdit = () => {
+      this.props.onToggleEdit(this.props.id);
     };
-    this.onSubmit = (e) => {
-      console.log(e);
-      e.preventDefault();
-      console.log(e.target.value);
-      this.setState({
-        taskLabel: e.target.value,
-      });
-    };
-    this.onEditLabelChange = (e) => {
-      this.editChage(e);
-    };
+
+    // onChange >>>>>> вводим данные в input
+    this.onEditLabelChange = this.onEditLabelChange.bind(this);
+    // onSubmit >>>>>>> применяем изменение в форме
+    this.handleSubmit = this.handleSubmit.bind(this);
   }
 
-  editChage(e) {
-    this.setState({ taskLabel: e });
+  // onChange >>>>>> вводим данные в input
+  onEditLabelChange(e) {
+    this.setState({
+      editLabel: e.target.value,
+    });
+  }
+
+  // onSubmit >>>>>>> применяем изменение в форме
+  handleSubmit(e) {
+    e.preventDefault();
+    this.props.chngeDescription(this.props.id, this.state.editLabel);
   }
 
   render() {
-    console.log(this.state.taskLabel);
-    const { onDeleted, done, show, editing, timeAfterCreate } = this.props;
+    const { done, show, editing } = this.props;
+
+    let classNameEdit = 'view';
 
     let className = '';
-    let classNameEdit = '';
-
     if (done) {
       className += ' completed';
     }
     if (!show) {
       className += ' hidden';
     }
-    if (!editing) {
+
+    let display = '';
+
+    if (editing) {
+      display = { display: 'block' };
       classNameEdit += ' edit';
     }
     return (
       <li className={className}>
-        <form className="view" onSubmit={this.onSubmit}>
-          <input className="toggle" type="checkbox" onChange={this.togle}></input>
+        <div className={classNameEdit} onSubmit={this.onSubmit}>
+          <input className="toggle" type="checkbox" onChange={this.togleDone}></input>
           <label>
-            <span className="description">{this.state.taskLabel}</span>
-            <span className="created">created {timeAfterCreate} ago</span>
+            <span className="description">{this.props.description}</span>
+            <span className="created">created {this.props.timeAfterCreate} ago</span>
+          </label>
+          <button className="icon icon-edit" onClick={this.toggleEdit}></button>
+          <button className="icon icon-destroy" onClick={this.props.onDeleted}></button>
+        </div>
+        {editing ? (
+          <form onSubmit={this.handleSubmit}>
             <input
               type="text"
-              className={classNameEdit}
-              defaultValue={this.state.taskLabel}
-              onChange={(e) => this.onEditLabelChange(e.target.value)}
-            ></input>
-          </label>
-          <button className="icon icon-edit" onClick={this.onEditng}></button>
-          <button className="icon icon-destroy" onClick={onDeleted}></button>
-        </form>
+              style={display}
+              className="edit"
+              defaultValue={this.props.description}
+              onChange={this.onEditLabelChange}
+            />
+          </form>
+        ) : null}
       </li>
     );
   }
