@@ -22,13 +22,14 @@ class App extends Component {
         { activFilter: true, name: 'completed' },
       ],
     };
+
     this.onToggleDone = (id) => {
       this.setState(({ todoList }) => {
         return { todoList: this.toggleProperty(todoList, id, 'done') };
       });
     };
 
-    this.onEdit = (id) => {
+    this.onToggleEdit = (id) => {
       this.setState(({ todoList }) => {
         return { todoList: this.toggleProperty(todoList, id, 'editing') };
       });
@@ -77,6 +78,31 @@ class App extends Component {
         return { filterList: newArray, todoList: newTodoList };
       });
     };
+
+    this.chngeDescription = this.toggleDescription.bind(this);
+  }
+
+  addItem(text) {
+    const newItem = this.createTodoItem(text);
+
+    if (text !== '') {
+      this.setState(({ todoList }) => {
+        const newArr = [...todoList, newItem];
+        return {
+          todoList: newArr,
+        };
+      });
+    }
+  }
+
+  toggleDescription(id, text) {
+    this.setState(({ todoList }) => {
+      const idx = todoList.findIndex((el) => el.id === id);
+      const oldItem = todoList[idx];
+      const newItem = { ...oldItem, description: text, editing: false };
+
+      return { todoList: [...todoList.slice(0, idx), newItem, ...todoList.slice(idx + 1)] };
+    });
   }
 
   createTodoItem(text) {
@@ -106,23 +132,9 @@ class App extends Component {
     return [...arr.slice(0, idx), newItem, ...arr.slice(idx + 1)];
   }
 
-  addItem(text) {
-    const newItem = this.createTodoItem(text);
-
-    if (text !== '') {
-      this.setState(({ todoList }) => {
-        const newArr = [...todoList, newItem];
-        return {
-          todoList: newArr,
-        };
-      });
-    }
-  }
-
   clearTaskList() {
     this.setState(({ todoList }) => {
       const newArr = todoList.filter((el) => {
-        console.log(el);
         return el.done !== true;
       });
       return { todoList: newArr };
@@ -143,12 +155,13 @@ class App extends Component {
             todos={todoList}
             onDeleted={this.deleteItem.bind(this)}
             onToggleDone={this.onToggleDone}
-            onEdit={this.onEdit}
+            onToggleEdit={this.onToggleEdit}
+            chngeDescription={this.chngeDescription}
           />
           <Footer
             toDo={todoCount}
             filterList={filterList}
-            clearTaskList={() => this.clearTaskList.bind(this)}
+            clearTaskList={this.clearTaskList.bind(this)}
             toggleFilter={this.toggleFilter}
           />
         </section>

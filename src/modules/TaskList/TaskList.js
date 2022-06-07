@@ -12,11 +12,10 @@ class TaskList extends Component {
   }
 
   render() {
-    const { todos, onDeleted, onToggleDone, onEdit } = this.props;
+    const { todos, onDeleted, onToggleDone, onToggleEdit, toggleEditigFalse, chngeDescription } = this.props;
     const list = todos.map((item) => {
       const { id, ...itemProps } = item;
       const timeAfterCreate = formatDistanceToNow(Date.now(item.createItem));
-
       return (
         <Task
           key={id}
@@ -25,7 +24,9 @@ class TaskList extends Component {
           timeAfterCreate={timeAfterCreate}
           id={id}
           onToggleDone={onToggleDone}
-          onEdit={onEdit}
+          onToggleEdit={onToggleEdit}
+          toggleEditigFalse={toggleEditigFalse}
+          chngeDescription={chngeDescription}
         />
       );
     });
