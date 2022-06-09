@@ -1,27 +1,34 @@
 import React, { Component } from 'react';
+import { v4 as uuidv4 } from 'uuid';
+// import { isEqual } from 'lodash.isequal';
 
 import NewTaskForm from '../NewTaskForm';
 import TaskList from '../TaskList/TaskList';
 import Footer from '../Footer/Footer';
-
+import { textConstants, MYTODOSTATE } from '../constants';
+// import  from '../constants/constants';
 import '../../index.css';
 
 class App extends Component {
   constructor(props) {
     super(props);
-    this.maxID = 1;
     this.state = {
-      todoList: [
-        this.createTodoItem('Complieted task'),
-        this.createTodoItem('sad task'),
-        this.createTodoItem('Active task'),
-      ],
+      todoList: [],
       filterList: [
         { activFilter: true, name: 'all' },
         { activFilter: true, name: 'active' },
         { activFilter: true, name: 'completed' },
       ],
     };
+
+    this.MYTODOSTATE = MYTODOSTATE;
+    this.textConstants = textConstants;
+    //>>>>>>> LS
+    this.setLocalState = this.setLocalState.bind(this);
+    this.getDataLocalStorage = this.getDataLocalStorage.bind(this);
+    this.updateStateTodoList = this.updateStateTodoList.bind(this);
+
+    // >>>>>> old
 
     this.onToggleDone = (id) => {
       this.setState(({ todoList }) => {
@@ -52,12 +59,12 @@ class App extends Component {
 
         let newTodoList = [];
 
-        if (name === 'all') {
+        if (name === this.textConstants.ALL) {
           newTodoList = todoList.map((el) => {
             el.show = true;
             return el;
           });
-        } else if (name === 'active') {
+        } else if (name === this.textConstants.ACTIVE) {
           newTodoList = todoList.map((el) => {
             el.show = true;
             if (el.done) {
@@ -65,7 +72,7 @@ class App extends Component {
             }
             return el;
           });
-        } else if (name === 'completed') {
+        } else if (name === this.textConstants.COOMPLETED) {
           newTodoList = todoList.map((el) => {
             el.show = true;
             if (!el.done) {
@@ -80,6 +87,45 @@ class App extends Component {
     };
 
     this.chngeDescription = this.toggleDescription.bind(this);
+    this.updateLocalStorage = this.updateLocalStorage.bind(this);
+  }
+
+  // LS fn -->
+  //  создаю ключ MYTODOSTATE = [] в LS
+  setLocalState() {
+    let localProp = localStorage.getItem(this.MYTODOSTATE);
+    if (!localProp) {
+      localStorage.setItem(this.MYTODOSTATE, JSON.stringify([]));
+    }
+  }
+
+  getDataLocalStorage() {
+    const state = localStorage.getItem(this.MYTODOSTATE);
+    return JSON.parse(state);
+  }
+  updateLocalStorage() {
+    localStorage.setItem(this.MYTODOSTATE, JSON.stringify(this.state.todoList));
+  }
+  updateStateTodoList() {
+    let localTodoList = this.getDataLocalStorage();
+
+    this.setState(({ todoList }) => {
+      let newArr = todoList.slice(0);
+      newArr = newArr.concat(localTodoList);
+      return { todoList: newArr };
+    });
+  }
+
+  //main fn -->
+  createTodoItem(text) {
+    return {
+      description: text,
+      createItem: new Date(),
+      id: uuidv4(),
+      done: false,
+      show: true,
+      editing: false,
+    };
   }
 
   addItem(text) {
@@ -95,6 +141,22 @@ class App extends Component {
     }
   }
 
+  deleteItem(id) {
+    this.setState(({ todoList }) => {
+      const idx = todoList.findIndex((el) => el.id === id);
+      const newArray = [...todoList.slice(0, idx), ...todoList.slice(idx + 1)];
+      return { todoList: newArray };
+    });
+  }
+  clearTaskList() {
+    this.setState(({ todoList }) => {
+      const newArr = todoList.filter((el) => {
+        return el.done !== true;
+      });
+      return { todoList: newArr };
+    });
+  }
+
   toggleDescription(id, text) {
     this.setState(({ todoList }) => {
       const idx = todoList.findIndex((el) => el.id === id);
@@ -102,25 +164,6 @@ class App extends Component {
       const newItem = { ...oldItem, description: text, editing: false };
 
       return { todoList: [...todoList.slice(0, idx), newItem, ...todoList.slice(idx + 1)] };
-    });
-  }
-
-  createTodoItem(text) {
-    return {
-      description: text,
-      createItem: new Date(),
-      id: this.maxID++,
-      done: false,
-      show: true,
-      editing: false,
-    };
-  }
-
-  deleteItem(id) {
-    this.setState(({ todoList }) => {
-      const idx = todoList.findIndex((el) => el.id === id);
-      const newArray = [...todoList.slice(0, idx), ...todoList.slice(idx + 1)];
-      return { todoList: newArray };
     });
   }
 
@@ -132,16 +175,20 @@ class App extends Component {
     return [...arr.slice(0, idx), newItem, ...arr.slice(idx + 1)];
   }
 
-  clearTaskList() {
-    this.setState(({ todoList }) => {
-      const newArr = todoList.filter((el) => {
-        return el.done !== true;
-      });
-      return { todoList: newArr };
-    });
+  componentDidMount() {
+    // localStorage.clear();
+    this.setLocalState();
+    this.updateStateTodoList();
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (JSON.stringify(prevState.todoList) !== this.state.todoList) {
+      this.updateLocalStorage();
+    }
   }
 
   render() {
+    console.log(this.textConstants);
     const { todoList, filterList } = this.state;
 
     const doneCount = todoList.filter((el) => el.done).length;
@@ -158,6 +205,7 @@ class App extends Component {
             onToggleEdit={this.onToggleEdit}
             chngeDescription={this.chngeDescription}
           />
+
           <Footer
             toDo={todoCount}
             filterList={filterList}
