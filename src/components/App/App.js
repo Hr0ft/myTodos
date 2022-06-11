@@ -21,8 +21,6 @@ class App extends Component {
       ],
     };
 
-    this.MYTODOSTATE = MYTODOSTATE;
-    this.textConstants = textConstants;
     //>>>>>>> LS
     this.setLocalState = this.setLocalState.bind(this);
     this.getDataLocalStorage = this.getDataLocalStorage.bind(this);
@@ -59,12 +57,12 @@ class App extends Component {
 
         let newTodoList = [];
 
-        if (name === this.textConstants.ALL) {
+        if (name === textConstants.ALL) {
           newTodoList = todoList.map((el) => {
             el.show = true;
             return el;
           });
-        } else if (name === this.textConstants.ACTIVE) {
+        } else if (name === textConstants.ACTIVE) {
           newTodoList = todoList.map((el) => {
             el.show = true;
             if (el.done) {
@@ -72,7 +70,7 @@ class App extends Component {
             }
             return el;
           });
-        } else if (name === this.textConstants.COOMPLETED) {
+        } else if (name === textConstants.COOMPLETED) {
           newTodoList = todoList.map((el) => {
             el.show = true;
             if (!el.done) {
@@ -88,23 +86,26 @@ class App extends Component {
 
     this.chngeDescription = this.toggleDescription.bind(this);
     this.updateLocalStorage = this.updateLocalStorage.bind(this);
+    this.onPlay = this.onPlay.bind(this);
+    this.onPause = this.onPause.bind(this);
   }
 
   // LS fn -->
   //  создаю ключ MYTODOSTATE = [] в LS
   setLocalState() {
-    let localProp = localStorage.getItem(this.MYTODOSTATE);
+    // localStorage.clear();
+    let localProp = localStorage.getItem(MYTODOSTATE);
     if (!localProp) {
-      localStorage.setItem(this.MYTODOSTATE, JSON.stringify([]));
+      localStorage.setItem(MYTODOSTATE, JSON.stringify([]));
     }
   }
 
   getDataLocalStorage() {
-    const state = localStorage.getItem(this.MYTODOSTATE);
+    const state = localStorage.getItem(MYTODOSTATE);
     return JSON.parse(state);
   }
   updateLocalStorage() {
-    localStorage.setItem(this.MYTODOSTATE, JSON.stringify(this.state.todoList));
+    localStorage.setItem(MYTODOSTATE, JSON.stringify(this.state.todoList));
   }
   updateStateTodoList() {
     let localTodoList = this.getDataLocalStorage();
@@ -117,7 +118,7 @@ class App extends Component {
   }
 
   //main fn -->
-  createTodoItem(text) {
+  createTodoItem(text, fullTime) {
     return {
       description: text,
       createItem: new Date(),
@@ -125,11 +126,13 @@ class App extends Component {
       done: false,
       show: true,
       editing: false,
+      fullTime,
+      play: false,
     };
   }
 
-  addItem(text) {
-    const newItem = this.createTodoItem(text);
+  addItem(text, min, sec) {
+    const newItem = this.createTodoItem(text, min, sec);
 
     if (text !== '') {
       this.setState(({ todoList }) => {
@@ -175,10 +178,48 @@ class App extends Component {
     return [...arr.slice(0, idx), newItem, ...arr.slice(idx + 1)];
   }
 
+  updateTime(id) {
+    this.setState(({ todoList }) => {
+      const idx = todoList.findIndex((el) => el.id === id);
+      const oldItem = todoList[idx];
+      let fullTime = oldItem;
+      if (fullTime.fullTime > 0) {
+        const newItem = { ...oldItem, play: true, fullTime: fullTime.fullTime - 1 };
+        return { todoList: [...todoList.slice(0, idx), newItem, ...todoList.slice(idx + 1)] };
+      } else {
+        clearInterval(this.inteerval);
+      }
+    });
+  }
+
+  onPlay(id) {
+    const idx = this.state.todoList.findIndex((el) => el.id === id);
+    const oldItem = this.state.todoList[idx];
+    console.log(oldItem);
+    if (!oldItem.play) {
+      this.inteerval = setInterval(() => {
+        this.updateTime(id);
+      }, 1000);
+    }
+  }
+
+  onPause(id) {
+    clearInterval(this.inteerval);
+    this.setState(({ todoList }) => {
+      const idx = todoList.findIndex((el) => el.id === id);
+      const oldItem = todoList[idx];
+      const newItem = { ...oldItem, play: false };
+      return { todoList: [...todoList.slice(0, idx), newItem, ...todoList.slice(idx + 1)] };
+    });
+  }
+
   componentDidMount() {
-    // localStorage.clear();
     this.setLocalState();
     this.updateStateTodoList();
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.interval);
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -188,7 +229,6 @@ class App extends Component {
   }
 
   render() {
-    console.log(this.textConstants);
     const { todoList, filterList } = this.state;
 
     const doneCount = todoList.filter((el) => el.done).length;
@@ -204,6 +244,8 @@ class App extends Component {
             onToggleDone={this.onToggleDone}
             onToggleEdit={this.onToggleEdit}
             chngeDescription={this.chngeDescription}
+            onPlay={this.onPlay}
+            onPause={this.onPause}
           />
 
           <Footer
