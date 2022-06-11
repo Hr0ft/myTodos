@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import formatDistanceToNow from 'date-fns/formatDistanceToNow';
-import { v4 as uuidv4 } from 'uuid';
+// import { v4 as uuidv4 } from 'uuid';
 
 import Task from '../Task/Task';
 
@@ -13,7 +13,8 @@ class TaskList extends Component {
   }
 
   render() {
-    const { todos, onDeleted, onToggleDone, onToggleEdit, toggleEditigFalse, chngeDescription } = this.props;
+    const { todos, onDeleted, onToggleDone, onToggleEdit, toggleEditigFalse, chngeDescription, onPlay, onPause } =
+      this.props;
     const list = todos.map((item) => {
       const { id, ...itemProps } = item;
       const timeAfterCreate = formatDistanceToNow(Date.now(item.createItem));
@@ -29,13 +30,15 @@ class TaskList extends Component {
           onToggleEdit={onToggleEdit}
           toggleEditigFalse={toggleEditigFalse}
           chngeDescription={chngeDescription}
+          onPlay={onPlay}
+          onPause={onPause}
         />
       );
     });
 
     //проверяем на наличие задачь в state и отрисовываем задачи/сообщение
 
-    const err =
+    const data =
       todos.length > 0 && todos !== null ? (
         list
       ) : (
@@ -43,10 +46,10 @@ class TaskList extends Component {
           className="view"
           style={{ height: '30px', display: 'flex', justifyContent: 'space-around', alignItems: 'center' }}
         >
-          <div key={uuidv4()}>Task is not create</div>
+          <div>Task is not create</div>
         </li>
       );
-    return <ul className="todo-list">{err} </ul>;
+    return <ul className="todo-list">{data}</ul>;
   }
 }
 
