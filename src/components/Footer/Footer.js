@@ -3,7 +3,6 @@ import React from 'react';
 import TaskFilter from '../TaskFilter/TaskFilter';
 
 const Footer = ({ toDo, filterList, toggleFilter, clearTaskList }) => {
-  //   console.log(toggleFilter);
   return (
     <footer className="footer">
       <span className="todo-count">{toDo} items left</span>

@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
 
-import '../../index.css';
-
 class Task extends Component {
   constructor(props) {
     super(props);
@@ -50,13 +48,14 @@ class Task extends Component {
     console.log(play);
     return (
       <li className={classNames('', { completed: done, hidden: !show, editing: editing })}>
-        <div className={classNames('view')} onSubmit={this.onSubmit}>
+        <div className={classNames('view')}>
           <input className="toggle" type="checkbox" onChange={this.togleDone}></input>
           <label>
             <span className="title">{description}</span>
             <span className="description">
               <button
                 className="icon icon-play"
+                disabled={play}
                 onClick={() => {
                   onPlay(id);
                 }}
@@ -71,7 +70,7 @@ class Task extends Component {
             </span>
             <span className="description"> created {timeAfterCreate} ago</span>
           </label>
-          <button className="icon icon-edit" disabled={play} onClick={this.toggleEdit}></button>
+          <button className="icon icon-edit" onClick={this.toggleEdit}></button>
           <button className="icon icon-destroy" onClick={onDeleted}></button>
         </div>
         {editing ? (
