@@ -1,14 +1,16 @@
+/// не получается настроить работу onPlay onPaused для конкретной задачи, сложности с  `this.`
+
 import React, { Component } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-// import { isEqual } from 'lodash.isequal';
 
-import NewTaskForm from '../NewTaskForm';
-import TaskList from '../TaskList/TaskList';
+import NewTaskFormHooks from '../NewTaskForm-hooks/NewTaskForm-hooks';
+import TaskListHooks from '../TaskListHooks/TaskListHooks';
 import Footer from '../Footer/Footer';
 import { textConstants, MYTODOSTATE } from '../constants';
-// import  from '../constants/constants';
-import '../../index.css';
+import { createTodoItem } from '../SupportFunction/createTodoItem';
+import { toggleProperty } from '../SupportFunction/toggleProperty';
 
+import '../../index.css';
 class App extends Component {
   constructor(props) {
     super(props);
@@ -21,25 +23,36 @@ class App extends Component {
       ],
     };
 
-    //>>>>>>> LS
+    //>>>>> LS
     this.setLocalState = this.setLocalState.bind(this);
     this.getDataLocalStorage = this.getDataLocalStorage.bind(this);
     this.updateStateTodoList = this.updateStateTodoList.bind(this);
+    this.updateLocalStorage = this.updateLocalStorage.bind(this);
 
-    // >>>>>> old
+    //>>>>>   Countdown
+    this.onPlay = this.onPlay.bind(this);
+    this.onPause = this.onPause.bind(this);
+
+    //>>>>>   TaskList
+    this.onToggleEdit = (id) => {
+      this.setState(({ todoList }) => {
+        return { todoList: toggleProperty(todoList, id, 'editing') };
+      });
+    };
 
     this.onToggleDone = (id) => {
       this.setState(({ todoList }) => {
-        return { todoList: this.toggleProperty(todoList, id, 'done') };
+        return { todoList: toggleProperty(todoList, id, 'done') };
       });
     };
 
-    this.onToggleEdit = (id) => {
+    this.chngeDescription = (id, text) => {
       this.setState(({ todoList }) => {
-        return { todoList: this.toggleProperty(todoList, id, 'editing') };
+        return { todoList: toggleProperty(todoList, id, 'editing', 'description', text) };
       });
     };
 
+    //>>>>>    Footer
     this.toggleFilter = (name) => {
       this.setState(({ todoList, filterList }) => {
         const idx = filterList.findIndex((el) => el.name === name);
@@ -83,23 +96,15 @@ class App extends Component {
         return { filterList: newArray, todoList: newTodoList };
       });
     };
-
-    this.chngeDescription = this.toggleDescription.bind(this);
-    this.updateLocalStorage = this.updateLocalStorage.bind(this);
-    this.onPlay = this.onPlay.bind(this);
-    this.onPause = this.onPause.bind(this);
   }
 
-  // LS fn -->
-  //  создаю ключ MYTODOSTATE = [] в LS
+  //>>>>>   LocalStorage update
   setLocalState() {
-    // localStorage.clear();
     let localProp = localStorage.getItem(MYTODOSTATE);
     if (!localProp) {
       localStorage.setItem(MYTODOSTATE, JSON.stringify([]));
     }
   }
-
   getDataLocalStorage() {
     const state = localStorage.getItem(MYTODOSTATE);
     return JSON.parse(state);
@@ -117,22 +122,9 @@ class App extends Component {
     });
   }
 
-  //main fn -->
-  createTodoItem(text, fullTime) {
-    return {
-      description: text,
-      createItem: new Date(),
-      id: uuidv4(),
-      done: false,
-      show: true,
-      editing: false,
-      fullTime,
-      play: false,
-    };
-  }
-
-  addItem(text, min, sec) {
-    const newItem = this.createTodoItem(text, min, sec);
+  //>>>>> todoList update
+  addItem(text, time) {
+    const newItem = createTodoItem(text, time, uuidv4);
 
     if (text !== '') {
       this.setState(({ todoList }) => {
@@ -145,6 +137,7 @@ class App extends Component {
   }
 
   deleteItem(id) {
+    clearInterval(this.inteerval);
     this.setState(({ todoList }) => {
       const idx = todoList.findIndex((el) => el.id === id);
       const newArray = [...todoList.slice(0, idx), ...todoList.slice(idx + 1)];
@@ -160,31 +153,13 @@ class App extends Component {
     });
   }
 
-  toggleDescription(id, text) {
-    this.setState(({ todoList }) => {
-      const idx = todoList.findIndex((el) => el.id === id);
-      const oldItem = todoList[idx];
-      const newItem = { ...oldItem, description: text, editing: false };
-
-      return { todoList: [...todoList.slice(0, idx), newItem, ...todoList.slice(idx + 1)] };
-    });
-  }
-
-  toggleProperty(arr, id, propName) {
-    const idx = arr.findIndex((el) => el.id === id);
-    const oldItem = arr[idx];
-    const newItem = { ...oldItem, [propName]: !oldItem[propName] };
-
-    return [...arr.slice(0, idx), newItem, ...arr.slice(idx + 1)];
-  }
-
+  //>>>>> countdown control
   updateTime(id) {
     this.setState(({ todoList }) => {
       const idx = todoList.findIndex((el) => el.id === id);
       const oldItem = todoList[idx];
-      let fullTime = oldItem;
-      if (fullTime.fullTime > 0) {
-        const newItem = { ...oldItem, play: true, fullTime: fullTime.fullTime - 1 };
+      if (oldItem.fullTime > 0) {
+        const newItem = { ...oldItem, play: true, fullTime: oldItem.fullTime - 1 };
         return { todoList: [...todoList.slice(0, idx), newItem, ...todoList.slice(idx + 1)] };
       } else {
         clearInterval(this.inteerval);
@@ -195,7 +170,14 @@ class App extends Component {
   onPlay(id) {
     const idx = this.state.todoList.findIndex((el) => el.id === id);
     const oldItem = this.state.todoList[idx];
-    console.log(oldItem);
+    this.setState(({ todoList }) => {
+      const idx = todoList.findIndex((el) => el.id === id);
+      const oldItem = todoList[idx];
+      const newItem = { ...oldItem, play: true };
+
+      return { todoList: [...todoList.slice(0, idx), newItem, ...todoList.slice(idx + 1)] };
+    });
+
     if (!oldItem.play) {
       this.inteerval = setInterval(() => {
         this.updateTime(id);
@@ -236,14 +218,14 @@ class App extends Component {
 
     return (
       <section className="todoapp">
-        <NewTaskForm onItemAdded={this.addItem.bind(this)} />
+        <NewTaskFormHooks onItemAdded={this.addItem.bind(this)} />
         <section className="main">
-          <TaskList
+          <TaskListHooks
             todos={todoList}
-            onDeleted={this.deleteItem.bind(this)}
             onToggleDone={this.onToggleDone}
             onToggleEdit={this.onToggleEdit}
             chngeDescription={this.chngeDescription}
+            onDeleted={this.deleteItem.bind(this)}
             onPlay={this.onPlay}
             onPause={this.onPause}
           />

@@ -1,18 +1,8 @@
-import React from 'react';
 import formatDistanceToNow from 'date-fns/formatDistanceToNow';
 
-import TaskHooks from '../task-hooks';
+import TaskHooks from '../Task-hooks';
 
-const TaskList = ({
-  todos,
-  onDeleted,
-  onToggleDone,
-  onToggleEdit,
-  toggleEditigFalse,
-  chngeDescription,
-  onPlay,
-  onPause,
-}) => {
+const TaskListHooks = ({ todos, onPlay, onDeleted, onToggleDone, onToggleEdit, chngeDescription, onPause }) => {
   const list = todos.map((item) => {
     const { id, ...itemProps } = item;
     const timeAfterCreate = formatDistanceToNow(Date.now(item.createItem));
@@ -20,14 +10,13 @@ const TaskList = ({
     return (
       <TaskHooks
         key={id}
-        {...itemProps}
-        onDeleted={() => onDeleted(item.id)}
-        timeAfterCreate={timeAfterCreate}
         id={id}
+        {...itemProps}
         onToggleDone={onToggleDone}
         onToggleEdit={onToggleEdit}
-        toggleEditigFalse={toggleEditigFalse}
+        timeAfterCreate={timeAfterCreate}
         chngeDescription={chngeDescription}
+        onDeleted={() => onDeleted(item.id)}
         onPlay={() => onPlay(item.id)}
         onPause={onPause}
       />
@@ -50,7 +39,8 @@ const TaskList = ({
   return <ul className="todo-list">{data}</ul>;
 };
 
-export default TaskList;
-TaskList.defaultProps = {
+export default TaskListHooks;
+
+TaskListHooks.defaultProps = {
   onDeleted: () => {},
 };

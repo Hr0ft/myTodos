@@ -24,7 +24,6 @@ class NewTaskForm extends Component {
       if (value > 58) {
         value = 59;
       }
-      console.log(value);
     }
     this.setState({
       [name]: value,
